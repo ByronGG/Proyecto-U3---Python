@@ -132,7 +132,7 @@
     <string>Conectar</string>
    </property>
   </widget>
-  <widget class="QListView" name="listView">
+  <widget class="QListView" name="viewDatos">
    <property name="geometry">
     <rect>
      <x>20</x>

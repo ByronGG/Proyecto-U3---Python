@@ -1,4 +1,5 @@
 import serial
+import csv
 import statistics
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
@@ -24,7 +25,7 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.list_model = QStandardItemModel()
 
         # Obtener la referencia al QListView
-        self.list_view = self.listView
+        self.list_view = self.viewDatos
 
         # Establecer el modelo de lista en el QListView
         self.list_view.setModel(self.list_model)
@@ -32,6 +33,24 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Conectar el botón "Leer datos" con la función que lee los valores del potenciómetro
         self.btnStart.clicked.connect(self.leer_datos)
         self.btnNormalizacion.clicked.connect(self.leer_datos)
+        self.btnCVS.clicked.connect(self.crear_csv)
+
+    def crear_csv(self):
+        # Obtener los datos de la lista
+        rows = []
+        for i in range(self.list_model.rowCount()):
+            row = []
+            for j in range(self.list_model.columnCount()):
+                item = self.list_model.item(i, j)
+                if item is not None:
+                    row.append(item.text())
+            rows.append(row)
+        # Escribir los datos en un archivo CSV
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Guardar archivo CSV", "", "Archivos CSV (*.csv)")
+        if filename:
+            with open(filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(rows)
 
     def leer_datos(self):
         # Leer 30 valores del potenciómetro desde Arduino
@@ -44,7 +63,7 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         print("Valores recibidos:", valores)
 
         #Area para los metodos
-        valores_normalizados = normalizar(valores)
+        
 
         # Calcular la moda, media, mediana, mayor y menor
         moda = statistics.mode(valores)
@@ -63,10 +82,7 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.list_model.appendRow(QStandardItem("Mediana: " + str(mediana)))
         self.list_model.appendRow(QStandardItem("Mayor: " + str(mayor)))
         self.list_model.appendRow(QStandardItem("Menor: " + str(menor)))
-        self.list_model.appendRow(QStandardItem("Valores normalizados: " + str(valores_normalizados)))
-
-        #Acion de los botones
-
+        
 
     def closeEvent(self, event):
         # Cerrar la conexión serial con Arduino al cerrar la aplicación
