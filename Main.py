@@ -6,7 +6,10 @@ from PyQt5.QtGui import QStandardItem, QStandardItemModel
 
 #Importar metodos para los botones
 from Metodos.Normalizar import normalizar
-
+from Metodos.Estandarizar import estandarizar
+from Metodos.ComplementoNormativo import complemento_normativo
+from Metodos.IQR import iqr
+from Metodos.PuntZ import puntuacion_z
 
 # Cargar la interfaz gráfica desde el archivo .ui
 qtCreatorFile = "UI_Proyecto3.ui"
@@ -33,6 +36,12 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Conectar el botón "Leer datos" con la función que lee los valores del potenciómetro
         self.btnStart.clicked.connect(self.leer_datos)
         self.btnNormalizacion.clicked.connect(self.leer_datos)
+        self.btnEstandarizacion.clicked.connect(self.leer_datos)
+        self.btnComplemento.clicked.connect(self.leer_datos)
+        self.btnIQR.clicked.connect(self.leer_datos)
+        self.btnZ.clicked.connect(self.leer_datos)
+
+
         self.btnCVS.clicked.connect(self.crear_csv)
 
     def crear_csv(self):
@@ -53,7 +62,7 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 writer.writerows(rows)
 
     def leer_datos(self):
-        # Leer 30 valores del potenciómetro desde Arduino
+        # Leer N valores del potenciómetro desde Arduino
         valores = []
         while len(valores) < 30:
             lectura = self.arduino.readline().decode().strip()
@@ -63,7 +72,12 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         print("Valores recibidos:", valores)
 
         #Area para los metodos
-        
+        normalizado = normalizar(valores)
+        estandar = estandarizar(valores)
+        complemento = complemento_normativo(valores)
+        intercuartil = iqr(valores)
+        z = puntuacion_z(valores)
+
 
         # Calcular la moda, media, mediana, mayor y menor
         moda = statistics.mode(valores)
@@ -82,7 +96,11 @@ class MyWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.list_model.appendRow(QStandardItem("Mediana: " + str(mediana)))
         self.list_model.appendRow(QStandardItem("Mayor: " + str(mayor)))
         self.list_model.appendRow(QStandardItem("Menor: " + str(menor)))
-        
+        self.list_model.appendRow(QStandardItem("Valores normalizados: " + str(normalizado)))
+        self.list_model.appendRow(QStandardItem("Valores estandarizados: " + str(estandar)))
+        self.list_model.appendRow(QStandardItem("Valores complementados normativo: " + str(complemento)))
+        self.list_model.appendRow(QStandardItem("Valores Intercuartiles: " + str(intercuartil)))
+        self.list_model.appendRow(QStandardItem("Valores Puntuación Z: " + str(z)))
 
     def closeEvent(self, event):
         # Cerrar la conexión serial con Arduino al cerrar la aplicación
